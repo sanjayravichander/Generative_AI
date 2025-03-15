@@ -24,3 +24,4 @@ uvicorn
 langserve
 sse_starlette
 streamlit
+pymysql
