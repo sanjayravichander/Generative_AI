@@ -25,3 +25,8 @@ langserve
 sse_starlette
 streamlit
 pymysql
+validators
+youtube_transcript_api
+pytube
+yt-dlp
+gradio
