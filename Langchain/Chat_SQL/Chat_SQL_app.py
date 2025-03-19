@@ -1,7 +1,7 @@
 import streamlit as st
 import os 
 from pathlib import Path
-from langchain_chroma import Chroma
+from langchain.vectorstores import FAISS  # Replacing Chroma with FAISS
 from langchain.agents import create_sql_agent
 from langchain.agents.agent_toolkits import SQLDatabaseToolkit
 from langchain.sql_database import SQLDatabase
@@ -16,7 +16,7 @@ st.set_page_config(page_title="🤖 Chat with your SQL Database")
 st.title("🤖 Chat with your SQL Database")
 
 INJECTION_WARNING = """ 
-⚠️ WARNING: SQL Agent can be vulnerable to SQL injection attacks. 
+️⚠ WARNING: SQL Agent can be vulnerable to SQL injection attacks. 
 Please ensure that the input is sanitized before using the SQL Agent.
 """
 st.sidebar.warning(INJECTION_WARNING)
@@ -89,7 +89,8 @@ agent = create_sql_agent(
     llm=llm, 
     toolkit=toolkit, 
     verbose=True, 
-    agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION
+    agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    handle_parsing_errors=True
 )
 
 # Chat History
