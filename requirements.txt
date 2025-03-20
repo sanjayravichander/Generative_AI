@@ -30,3 +30,4 @@ youtube_transcript_api
 pytube
 yt-dlp
 gradio
+langchain_nvidia_ai_endpoints
