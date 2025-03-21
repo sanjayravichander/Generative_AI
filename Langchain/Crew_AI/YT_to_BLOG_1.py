@@ -6,22 +6,24 @@ import os
 import googleapiclient.discovery
 from googleapiclient.discovery import build
 
-# Set up Groq client
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
 # YouTube API Key
-YOUTUBE_API_KEY = "AIzaSyB3Hs-djLoDnYyGtVBnWKfPIRUxjf4Esgc"
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
+
+# Groq AI API Key
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+client = Groq(api_key=GROQ_API_KEY)
 
 def get_video_id(url):
     """Extracts video ID from YouTube URL."""
-    return url.split('v=')[-1].split('&')[0] if 'youtu.be' not in url else url.split('/')[-1]
+    if "youtube.com/watch" in url:
+        return url.split("v=")[-1].split("&")[0]
+    elif "youtu.be" in url:
+        return url.split("/")[-1]
+    return None
 
 def get_channel_videos(channel_identifier):
-    """Fetches the latest 5 videos from a channel name or channel URL."""
-    youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
-    
-    # If user enters a full channel URL, extract the channel ID
+    """Fetches the latest 5 videos from a YouTube channel."""
     if "youtube.com/channel/" in channel_identifier:
         channel_id = channel_identifier.split("youtube.com/channel/")[-1].split("?")[0]
     elif "youtube.com/c/" in channel_identifier:
@@ -29,14 +31,12 @@ def get_channel_videos(channel_identifier):
         channel_response = youtube.search().list(q=channel_username, type="channel", part="id", maxResults=1).execute()
         channel_id = channel_response["items"][0]["id"]["channelId"] if channel_response["items"] else None
     else:
-        # Treat input as a channel name and search
         search_response = youtube.search().list(q=channel_identifier, type="channel", part="id", maxResults=1).execute()
         channel_id = search_response["items"][0]["id"]["channelId"] if search_response["items"] else None
 
     if not channel_id:
         return None
 
-    # Fetch latest 5 videos from the channel
     videos_response = youtube.search().list(
         channelId=channel_id,
         type="video",
@@ -83,20 +83,16 @@ def generate_blog_content(transcript):
         return None
 
 def main():
+    st.set_page_config(page_title="YouTube to Blog Converter", page_icon="🎥", layout="wide")
+    
     # Header Section
     st.markdown("""
-        <div class="title-box">
-            <h1 style="color: #FFD700; margin: 0;">🎥 YouTube to Blog Converter</h1>
-            <p style="color: #FFA500; margin: 0.5rem 0 0;">Transform any YouTube video into a beautiful blog post ✨</p>
-        </div>
+        <h1 style="color: #FFD700;">🎥 YouTube to Blog Converter</h1>
+        <p style="color: #FFA500;">Transform any YouTube video into a beautiful blog post ✨</p>
+        <hr>
     """, unsafe_allow_html=True)
 
-
-    # Input Section
-    with st.container():
-        st.markdown('<div class="input-box">', unsafe_allow_html=True)
-        url = st.text_input("", placeholder="Paste YouTube Video URL or Channel Name...", key="url_input")
-        st.markdown('</div>', unsafe_allow_html=True)
+    url = st.text_input("Paste YouTube Video URL or Channel Name", placeholder="Enter YouTube URL or Channel Name...", key="url_input")
 
     video_id = None
     selected_video = None
@@ -121,8 +117,8 @@ def main():
 
                 with cols[1]:
                     st.write("**Step 1:** Extracting Video ID... ✅")
-                    
                     st.write("**Step 2:** Fetching Transcript... ⏳")
+                    
                     transcript = get_transcript(video_id)
                     
                     if transcript:
@@ -135,23 +131,18 @@ def main():
 
                             # Result Section
                             with st.container():
-                                st.markdown('<div class="result-box">', unsafe_allow_html=True)
                                 st.subheader("🎉 Your Generated Blog Post")
                                 st.markdown("---")
                                 st.markdown(blog_content, unsafe_allow_html=True)
 
                                 # Download Section
-                                cols = st.columns([3, 1])
-                                with cols[1]:
-                                    st.download_button(
-                                        label="📥 Download Blog",
-                                        data=f"<html><body>{blog_content}</body></html>",
-                                        file_name=f"blog_{datetime.now().strftime('%Y%m%d')}.html",
-                                        mime="text/html",
-                                        use_container_width=True,
-                                        key="download_btn"
-                                    )
-                                st.markdown('</div>', unsafe_allow_html=True)
+                                st.download_button(
+                                    label="📥 Download Blog",
+                                    data=f"<html><body>{blog_content}</body></html>",
+                                    file_name=f"blog_{datetime.now().strftime('%Y%m%d')}.html",
+                                    mime="text/html",
+                                    use_container_width=True
+                                )
                         else:
                             st.error("Failed to generate content")
                     else:
@@ -176,7 +167,7 @@ def main():
             - 🎨 Beautiful formatting
         """)
         st.markdown("---")
-        st.markdown("*Made with ❤️ by [Your Name]*")
+        st.markdown("*Made with ❤️ by Your Name*")
 
 if __name__ == "__main__":
     main()
