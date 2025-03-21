@@ -10,9 +10,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_community.vectorstores import FAISS
 
-# Load environment variables
-load_dotenv()
-api_key = os.getenv("NVIDIA_API_KEY")
+# Load API Key securely
+api_key = st.secrets["NVIDIA_API_KEY"]
 
 # Initialize Streamlit app
 st.set_page_config(page_title="RAG App with NVIDIA NIM", layout="wide")
