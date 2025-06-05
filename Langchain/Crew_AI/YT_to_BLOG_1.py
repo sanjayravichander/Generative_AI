@@ -73,7 +73,7 @@ def generate_blog_content(transcript):
                 {"role": "system", "content": "Professional content writer"},
                 {"role": "user", "content": prompt}
             ],
-            model="Qwen-2.5-32b",
+            model="llama-3.3-70b-versatile",
             temperature=0.7,
             max_tokens=2000
         )
